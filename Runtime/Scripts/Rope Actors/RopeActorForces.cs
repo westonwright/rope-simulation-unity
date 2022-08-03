@@ -27,7 +27,7 @@ public class RopeActorForces : RopeActorBase
    
     // could accumulate forces over a frame then apply them but not doing that yet
     public void ApplyForce(Vector3 forceVector, ForceMode forceMode, float timeStep) =>
-        ropeSimulatorForces.AccumulateForce(forceVector, forceMode, timeStep, Rope.Points);
+        ropeSimulatorForces.AccumulateForce(forceVector, forceMode, timeStep, Rope.RopeBody);
 
     public void ApplyForce(Vector3 forceVector, ForceMode forceMode, float timeStep, RopePoint point) =>
         ropeSimulatorForces.AccumulateForce(forceVector, forceMode, timeStep, point);

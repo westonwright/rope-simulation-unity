@@ -19,7 +19,7 @@ public class RopeSimulatorTrigger
         this.triggerEnabled = triggerEnabled;
     }
 
-    public List<RopeContactTrigger> GatherContacts(IList<RopeStick> sticks)
+    public List<RopeContactTrigger> GatherContacts(IEnumerable<RopeStick> sticks)
     {
         List<RopeContactTrigger> contacts = new List<RopeContactTrigger>();
         if (!triggerEnabled) return contacts;

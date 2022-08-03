@@ -7,20 +7,25 @@ public class RopeActorTrigger : RopeActorBase
     private RopeSimulatorTrigger ropeSimulatorTrigger;
     public RopeSimulatorTrigger RopeSimulatorTrigger { get { return ropeSimulatorTrigger; } }
 
+    private RopeActorLength ropeActorLength;
+    public RopeActorLength RopeActorLength { get { return ropeActorLength; } }
+
     List<RopeContactTrigger> oldContacts;
     List<RopeContactTrigger> newContacts;
 
     public RopeActorTrigger(
         Rope rope,
+        RopeActorLength ropeActorLength,
         bool triggerEnabled
         ) : base(rope)
     {
+        this.ropeActorLength = ropeActorLength;
         this.ropeSimulatorTrigger = new RopeSimulatorTrigger(
             CalculateLayermask(),
             triggerEnabled
             );
 
-        actionExecutions.Add((ExecutionOrder, DetectTrigger));
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder, DetectTrigger));
     }
 
     public bool TriggerEnabled { set => ropeSimulatorTrigger.TriggerEnabled = value; }
@@ -34,7 +39,7 @@ public class RopeActorTrigger : RopeActorBase
 
     private LayerMask CalculateLayermask()
     {
-        return RopeCollisionMatrixLayerMask.MaskForLayer(Rope.ParentGameObject.layer);
+        return RopeCollisionMatrixLayerMask.MaskForLayer(Rope.RopeGameObject.gameObject.layer);
     }
 
     /// <summary>
@@ -43,7 +48,7 @@ public class RopeActorTrigger : RopeActorBase
     private void DetectTrigger()
     {
         oldContacts = newContacts.ToList();
-        newContacts = ropeSimulatorTrigger.GatherContacts(Rope.Sticks);
+        newContacts = ropeSimulatorTrigger.GatherContacts(ropeActorLength.RopeSimulatorLength);
         SendCollisionEvents();
     }
 
@@ -77,7 +82,7 @@ public class RopeActorTrigger : RopeActorBase
         if (triggerEvent.Contact.Rigidbody != null)
         {
             triggerEvent.Contact.Rigidbody.gameObject.SendMessage("OnRopeTriggerEnter", triggerEvent, SendMessageOptions.DontRequireReceiver);
-            Rope.ParentGameObject.SendMessage("OnRopeTriggerEnter", triggerEvent, SendMessageOptions.DontRequireReceiver);
+            Rope.RopeGameObject.gameObject.SendMessage("OnRopeTriggerEnter", triggerEvent, SendMessageOptions.DontRequireReceiver);
         }
     }
     private void SendTriggerStay(RopeContactTrigger contact)
@@ -86,7 +91,7 @@ public class RopeActorTrigger : RopeActorBase
         if (triggerEvent.Contact.Rigidbody != null)
         {
             triggerEvent.Contact.Rigidbody.gameObject.SendMessage("OnRopeTriggerStay", triggerEvent, SendMessageOptions.DontRequireReceiver);
-            Rope.ParentGameObject.SendMessage("OnRopeTriggerStay", triggerEvent, SendMessageOptions.DontRequireReceiver);
+            Rope.RopeGameObject.gameObject.SendMessage("OnRopeTriggerStay", triggerEvent, SendMessageOptions.DontRequireReceiver);
         }
     }
     private void SendTriggerExit(RopeContactTrigger contact)
@@ -95,7 +100,7 @@ public class RopeActorTrigger : RopeActorBase
         if (triggerEvent.Contact.Rigidbody != null)
         {
             triggerEvent.Contact.Rigidbody.gameObject.SendMessage("OnRopeTriggerExit", triggerEvent, SendMessageOptions.DontRequireReceiver);
-            Rope.ParentGameObject.SendMessage("OnRopeTriggerExit", triggerEvent, SendMessageOptions.DontRequireReceiver);
+            Rope.RopeGameObject.gameObject.SendMessage("OnRopeTriggerExit", triggerEvent, SendMessageOptions.DontRequireReceiver);
         }
     }
 }

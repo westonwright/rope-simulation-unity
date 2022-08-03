@@ -35,6 +35,8 @@ public class RopeComponentLength : RopeComponentBase
     private float maxRopeLength = 10f;
     [SerializeField]
     private float minRopeLength = .1f;
+    [SerializeField]
+    private float segmentLength = .2f;
 
     private RopeActorLength ropeActorLength;
     public override RopeActorBase RopeActor { get { return ropeActorLength; } }
@@ -46,8 +48,9 @@ public class RopeComponentLength : RopeComponentBase
             goalLength,
             maxRopeLength,
             minRopeLength,
-            rope.Sticks[0].Length
+            segmentLength
             );
+        ropeActorLength.EnableActor();
     }
 
     protected override void OnValidate()

@@ -25,8 +25,6 @@ public interface IRopeTension
 public class RopeComponentTension : RopeComponentBase
 {
     [SerializeField]
-    private bool tensionEnabled = true;
-    [SerializeField]
     private float thresholdTension = 1.33f;
     [SerializeField]
     private float springStrength = 100f;
@@ -50,20 +48,19 @@ public class RopeComponentTension : RopeComponentBase
         ropeActorTension = new RopeActorTension(
             rope,
             ropeActorRigidbody,
-            tensionEnabled,
             thresholdTension,
             springStrength,
             dampingStrength
             );
+        ropeActorTension.EnableActor();
     }
 
     protected override void OnValidate()
     {
-        thresholdTension = Mathf.Min(1, thresholdTension);
+        thresholdTension = Mathf.Max(1, thresholdTension);
         springStrength = Mathf.Max(0, springStrength);
     }
 
-    public bool TensionEnabled { set => ropeActorTension.TensionEnabled = value;  }
     public float ThresholdTension { get => ropeActorTension.ThresholdTension; set => ropeActorTension.ThresholdTension = value; }
     public float SpringStrength { get => ropeActorTension.SpringStrength; set => ropeActorTension.SpringStrength = value; }
     public float DampingStrength { get => ropeActorTension.DampingStrength; set => ropeActorTension.DampingStrength = value; }

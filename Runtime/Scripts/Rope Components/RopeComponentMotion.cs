@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 /*
 public interface IRopeMotion
 {
@@ -33,7 +34,7 @@ public interface IRopeMotion
 }
 */
 
-[RequireComponent(typeof(RopeGameObject))]
+[RequireComponent(typeof(RopeGameObject), typeof(RopeComponentLength))]
 public class RopeComponentMotion : RopeComponentBase
 {
     [SerializeField]
@@ -48,14 +49,23 @@ public class RopeComponentMotion : RopeComponentBase
     private RopeActorMotion ropeActorMotion;
     public override RopeActorBase RopeActor { get { return ropeActorMotion; } }
 
+    protected override void Start()
+    {
+        requiredActorTypes.Add(typeof(RopeActorLength));
+        base.Start();
+    }
+
     public override void Initialize(Rope rope, IEnumerable<RopeActorBase> requiredActors)
     {
+        RopeActorLength ropeActorLength = requiredActors.FirstOrDefault(x => x.GetType() == typeof(RopeActorLength)) as RopeActorLength;
         ropeActorMotion = new RopeActorMotion(
             rope,
+            ropeActorLength,
             movementIterations,
             maximumAngle,
             ropeDrag
             );
+        ropeActorMotion.EnableActor();
     }
 
     protected override void OnValidate()

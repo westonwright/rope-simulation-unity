@@ -415,7 +415,6 @@ public class RopeContactChain : IEnumerable<RopeContact>
 
     }
 
-
     public IEnumerator<RopeContact> GetEnumerator()
     {
         RopeContact contact = startContact;

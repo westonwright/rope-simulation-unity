@@ -7,17 +7,22 @@ public class RopeActorDebug : RopeActorBase
     private RopeSimulatorDebug ropeSimulatorDebug;
     public RopeSimulatorDebug RopeSimulatorDebug { get { return ropeSimulatorDebug; } }
 
+    private RopeActorLength ropeActorLength;
+    public RopeActorLength RopeActorLength { get { return ropeActorLength; } }
+
     public RopeActorDebug(
         Rope rope,
+        RopeActorLength ropeActorLength,
         Color lineColor
         )
         : base(rope)
     {
+        this.ropeActorLength = ropeActorLength;
         this.ropeSimulatorDebug = new RopeSimulatorDebug(
             lineColor
             );
 
-        actionExecutions.Add((ExecutionOrder, DrawLines));
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder, DrawLines));
     }
 
     public override int ExecutionOrder { get { return int.MaxValue; } }
@@ -26,6 +31,6 @@ public class RopeActorDebug : RopeActorBase
 
     private void DrawLines()
     {
-        ropeSimulatorDebug.DrawLines(Rope.Sticks);
+        ropeSimulatorDebug.DrawLines(ropeActorLength.RopeSimulatorLength);
     }
 }

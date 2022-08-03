@@ -6,13 +6,20 @@ using System.Linq;
 
 public class RopeGameObject : MonoBehaviour
 {
-    private Rope rope;
+    [SerializeField]
+    private int initialSegmentCount = 20;
 
-    public Transform[] attachmentBodies;
-    public int[] attachmentIndexes;
+    private Rope rope;
 
     private List<RopeComponentBase> activeComponents = new List<RopeComponentBase>();
     private List<RopeComponentBase> waitingComponents = new List<RopeComponentBase>();
+
+    /*
+    public T GetRopeComponent<T>() where T : RopeActorBase
+    {
+        return (T)ropeComponents.FirstOrDefault(x => x.GetType() == typeof(T));
+    }
+    */
 
     public void RequestComponentInitialization(RopeComponentBase ropeComponent)
     {
@@ -28,14 +35,13 @@ public class RopeGameObject : MonoBehaviour
         }
     }
 
-    private bool InitializeComponent(RopeComponentBase addedComponent, IEnumerable<RopeActorBase> requiredComponents)
+    private bool InitializeComponent(RopeComponentBase addedComponent, IEnumerable<RopeActorBase> requiredActors)
     {
         // make sure it cant add twice
         if (activeComponents.Find(x => x.GetType() == addedComponent.GetType()) == null)
         {
-            addedComponent.Initialize(rope, requiredComponents);
+            addedComponent.Initialize(rope, requiredActors);
             activeComponents.Add(addedComponent);
-            rope.AddRopeComponent(addedComponent.RopeActor);
             return true;
         }
         else return false;
@@ -57,20 +63,20 @@ public class RopeGameObject : MonoBehaviour
     private void CheckWaitingList()
     {
         List<RopeComponentBase> componentsToSwap = new List<RopeComponentBase>();
-        IEnumerable<RopeActorBase> requiredComponents = new List<RopeActorBase>();
+        IEnumerable<RopeActorBase> requiredActors = new List<RopeActorBase>();
         foreach (RopeComponentBase waitingComponent in waitingComponents)
         {
-            if(CheckAvailability(waitingComponent, out requiredComponents)) componentsToSwap.Add(waitingComponent);
+            if(CheckAvailability(waitingComponent, out requiredActors)) componentsToSwap.Add(waitingComponent);
         }
         foreach(RopeComponentBase swapComponent in componentsToSwap)
         {
             waitingComponents.Remove(swapComponent);
-            InitializeComponent(swapComponent, requiredComponents);
+            InitializeComponent(swapComponent, requiredActors);
         }
         if(componentsToSwap.Count > 0) CheckWaitingList();
     }
 
-    private bool CheckAvailability(RopeComponentBase checkingComponent, out IEnumerable<RopeActorBase> requiredComponents)
+    private bool CheckAvailability(RopeComponentBase checkingComponent, out IEnumerable<RopeActorBase> requiredActors)
     {
         List<RopeActorBase> requiredList = new List<RopeActorBase>();
 
@@ -88,7 +94,7 @@ public class RopeGameObject : MonoBehaviour
             RopeComponentBase match = activeComponents.FirstOrDefault(x => x.RopeActor.GetType() == t);
             if(match == null)
             {
-                requiredComponents = requiredList;
+                requiredActors = requiredList;
                 return false;
             }
             else
@@ -96,7 +102,7 @@ public class RopeGameObject : MonoBehaviour
                 requiredList.Add(match.RopeActor);
             }
         }
-        requiredComponents = requiredList;
+        requiredActors = requiredList;
         return true;
     }
 
@@ -104,49 +110,35 @@ public class RopeGameObject : MonoBehaviour
     public void DisableComponent(RopeComponentBase ropeComponent)
     {
         activeComponents.Remove(ropeComponent);
-        rope.RemoveRopeComponent(ropeComponent.RopeActor);
-
         // TODO: create a safe solution for disabling components
 
     }
 
     // Start is called before the first frame update
+    // TODO: Move this off of this gameobject?
     void Awake()
     {
-        RopeAttachment[] attachments = new RopeAttachment[attachmentBodies.Length];
-        for(int i = 0; i < attachmentBodies.Length; i++)
+        RopeComponentAttachments attachmentComponent = GetComponent<RopeComponentAttachments>();
+        RopeBuilder ropeBuilder;
+        if (attachmentComponent != null)
         {
-            if (attachmentBodies[i].GetComponent<Rigidbody>() != null)
-            {
-                attachments[i] = new RopeAttachmentRigidbody(
-                    attachmentIndexes[i],
-                    attachmentBodies[i].GetComponent<Rigidbody>().transform,
-                    Vector3.zero,
-                    attachmentBodies[i].GetComponent<Rigidbody>()
-                    );
-            }
-            else
-            {
-                attachments[i] = new RopeAttachmentTransform(
-                    attachmentIndexes[i],
-                    attachmentBodies[i],
-                    Vector3.up
-                    );
-            }
+            ropeBuilder = new RopeBuilderAttachments(attachmentComponent.InitialAttachments, initialSegmentCount);
+        }
+        else
+        {
+            ropeBuilder = new RopeBuilderFromTo(Vector3.one * -5, Vector3.one * 5, initialSegmentCount);
         }
 
         rope = new Rope(
-            gameObject,
-            attachments,
-            15,
-            .5f
+            this,
+            ropeBuilder
             );
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        rope.UpdateRope(Time.fixedDeltaTime);
+        rope.RopeUpdater.UpdateRope(Time.fixedDeltaTime);
     }
 
 }

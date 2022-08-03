@@ -1,7 +1,7 @@
 {
   "name": "com.weston-wright.rope-simulation-unity",
   "description": "3D simulation of ropes with optional components to control behaviors",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "unity": "2021.3",
   "unityRelease": "3f1",
   "displayName": "Rope Simulation",

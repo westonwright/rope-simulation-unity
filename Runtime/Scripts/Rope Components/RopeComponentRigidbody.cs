@@ -18,11 +18,9 @@ public interface IRopeRigidbody
     public void UpdateLayermask();
 }
 */
-[RequireComponent(typeof(RopeGameObject), typeof(RopeComponentMotion))]
+[RequireComponent(typeof(RopeGameObject), typeof(RopeComponentMotion), typeof(RopeComponentAttachments))]
 public class RopeComponentRigidbody : RopeComponentBase
 {
-    [SerializeField]
-    private bool collisionEnabled = true;
     [SerializeField]
     private int collisionIterations = 2;
 
@@ -32,26 +30,28 @@ public class RopeComponentRigidbody : RopeComponentBase
     protected override void Start()
     {
         requiredActorTypes.Add(typeof(RopeActorMotion));
+        requiredActorTypes.Add(typeof(RopeActorAttachments));
         base.Start();
     }
 
     public override void Initialize(Rope rope, IEnumerable<RopeActorBase> requiredActors)
     {
         RopeActorMotion ropeActorMotion = requiredActors.FirstOrDefault(x => x.GetType() == typeof(RopeActorMotion)) as RopeActorMotion;
+        RopeActorAttachments ropeActorAttachments = requiredActors.FirstOrDefault(x => x.GetType() == typeof(RopeActorAttachments)) as RopeActorAttachments;
         // if (ropeMotion == null) 
         ropeActorRigidbody = new RopeActorRigidbody(
             rope,
             ropeActorMotion,
-            collisionEnabled,
+            ropeActorAttachments,
             collisionIterations
             );
+        ropeActorRigidbody.EnableActor();
     }
     protected override void OnValidate()
     {
         collisionIterations = Mathf.Max(collisionIterations, 1);
     }
 
-    public bool CollisionEnabled { get => ropeActorRigidbody.CollisionEnabled; set => ropeActorRigidbody.CollisionEnabled = value; }
     public int CollisionIterations { get => ropeActorRigidbody.CollisionIterations; set => ropeActorRigidbody.CollisionIterations = value; }
 
 }

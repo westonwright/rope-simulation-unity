@@ -9,9 +9,6 @@ public class RopeSimulatorTension
     private RopeSimulatorRigidbody ropeSimulatorRigidbody;
     public RopeSimulatorRigidbody RopeSimulatorRigidbody { get { return ropeSimulatorRigidbody; } }
 
-    private bool tensionEnabled;
-    public bool TensionEnabled { set => tensionEnabled = value; }
-
     private float thresholdTension = 1.33f;
     public float ThresholdTension { get => thresholdTension; set => thresholdTension = value; }
 
@@ -23,14 +20,12 @@ public class RopeSimulatorTension
 
     public RopeSimulatorTension(
         RopeSimulatorRigidbody ropeSimulatorRigidbody,
-        bool tensionEnabled = true,
         float thresholdTension = 1.33f,
         float springStrength = 100f,
         float dampingStrength = 1
         )
     {
         this.ropeSimulatorRigidbody = ropeSimulatorRigidbody;
-        this.tensionEnabled = tensionEnabled;
         this.thresholdTension = thresholdTension;
         this.springStrength = springStrength;
         this.dampingStrength = dampingStrength;
@@ -54,39 +49,42 @@ public class RopeSimulatorTension
             }
         }
         */
-        if (!tensionEnabled) return;
 
         foreach (RopeContact contact in ropeSimulatorRigidbody.Contacts)
         {
-            if (contact.LowContact == null) continue;
             float lowSectionTension = 0;
-            int count = 0;
-            for (int i = contact.LowContact.PointIndex; i < contact.PointIndex; i++)
-            {
-                lowSectionTension += Mathf.Clamp(
-                    (Vector3.Distance(sticks[i].PointA.Position, sticks[i].PointB.Position) / sticks[i].Length),
-                    0,
-                    MAX_TENSION_CONTRIBUTION
-                    );
-                count++;
-            }
-            lowSectionTension /= count;
-            lowSectionTension = Mathf.Max((lowSectionTension / thresholdTension) - 1, 0);
-
-            if (contact.HighContact == null) continue;
             float highSectionTension = 0;
-            count = 0;
-            for (int i = contact.PointIndex; i < contact.HighContact.PointIndex; i++)
+            if (contact.LowContact != null)
             {
-                highSectionTension += Mathf.Clamp(
-                    (Vector3.Distance(sticks[i].PointA.Position, sticks[i].PointB.Position) / sticks[i].Length),
-                    0,
-                    MAX_TENSION_CONTRIBUTION
-                    );
-                count++;
+                int count = 0;
+                for (int i = contact.LowContact.PointIndex; i < contact.PointIndex; i++)
+                {
+                    lowSectionTension += Mathf.Clamp(
+                        (Vector3.Distance(sticks[i].PointA.Position, sticks[i].PointB.Position) / sticks[i].Length),
+                        0,
+                        MAX_TENSION_CONTRIBUTION
+                        );
+                    count++;
+                }
+                lowSectionTension /= count;
+                lowSectionTension = Mathf.Max((lowSectionTension / thresholdTension) - 1, 0);
             }
-            highSectionTension /= count;
-            highSectionTension = Mathf.Max((highSectionTension / thresholdTension) - 1, 0);
+
+            if (contact.HighContact != null)
+            {
+                int count = 0;
+                for (int i = contact.PointIndex; i < contact.HighContact.PointIndex; i++)
+                {
+                    highSectionTension += Mathf.Clamp(
+                        (Vector3.Distance(sticks[i].PointA.Position, sticks[i].PointB.Position) / sticks[i].Length),
+                        0,
+                        MAX_TENSION_CONTRIBUTION
+                        );
+                    count++;
+                }
+                highSectionTension /= count;
+                highSectionTension = Mathf.Max((highSectionTension / thresholdTension) - 1, 0);
+            }
 
             if (lowSectionTension > 0 || highSectionTension > 0)
             {

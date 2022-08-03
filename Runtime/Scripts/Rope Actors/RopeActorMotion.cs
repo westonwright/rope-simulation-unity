@@ -7,8 +7,12 @@ public class RopeActorMotion : RopeActorBase
     private RopeSimulatorMotion ropeSimulatorMotion;
     public RopeSimulatorMotion RopeSimulatorMotion { get { return ropeSimulatorMotion; } }
 
+    private RopeActorLength ropeActorLength;
+    public RopeActorLength RopeActorLength { get { return ropeActorLength; } }
+
     public RopeActorMotion(
         Rope rope,
+        RopeActorLength ropeActorLength,
         int movementIterations,
         float maximumAngle,
         float ropeDrag
@@ -21,7 +25,8 @@ public class RopeActorMotion : RopeActorBase
             ropeDrag
             );
 
-        actionExecutions.Add((ExecutionOrder, UpdateRope));
+        this.ropeActorLength = ropeActorLength;
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder, UpdateRope));
     }
     public override int ExecutionOrder { get { return 0; } }
 
@@ -31,8 +36,8 @@ public class RopeActorMotion : RopeActorBase
 
     private void UpdateRope()
     {
-        ropeSimulatorMotion.ApplyVelocity(Rope.Points);
-        ropeSimulatorMotion.ApplyMotion(Rope.Sticks);
+        ropeSimulatorMotion.ApplyVelocity(Rope.RopeBody);
+        ropeSimulatorMotion.ApplyMotion(ropeActorLength.RopeSimulatorLength);
     }
 }
 

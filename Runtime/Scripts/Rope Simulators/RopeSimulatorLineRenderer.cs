@@ -17,10 +17,10 @@ public class RopeSimulatorLineRenderer
         this.smoothingResolution = smoothingResolution;
     }
 
-    public void UpdateLineRenderer(IList<RopePoint> ropePoints)
+    public void UpdateLineRenderer(IEnumerable<IRopePointPosition> ropePoints)
     {
         List<Vector3> basePoints = new List<Vector3>();
-        foreach (RopePoint ropePoint in ropePoints) basePoints.Add(ropePoint.Position);
+        foreach (IRopePointPosition ropePoint in ropePoints) basePoints.Add(ropePoint.Position);
 
         Vector3[] newPoints = SmoothedPositions(basePoints);
         lineRenderer.positionCount = newPoints.Length;

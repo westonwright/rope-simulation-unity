@@ -11,6 +11,9 @@ public abstract class RopeComponentBase : MonoBehaviour
 
     public abstract RopeActorBase RopeActor { get; }
 
+    //protected List<Type> incompatibleTypes = new List<Type>();
+    //public List<Type> IncompatibleTypes { get { return incompatibleTypes; } }
+
     protected List<Type> requiredActorTypes = new List<Type>();
     public List<Type> RequiredActorTypes { get { return requiredActorTypes; } }
 
@@ -20,7 +23,7 @@ public abstract class RopeComponentBase : MonoBehaviour
         {
             Debug.LogWarning("Don't add two of same type of Rope Components!");
             Debug.LogWarning("Destroying duplicate Component", this.gameObject);
-            Destroy(this);
+            DestroyImmediate(this);
         }
     }
 

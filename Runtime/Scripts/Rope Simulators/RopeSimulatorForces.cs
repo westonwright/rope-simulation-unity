@@ -21,9 +21,10 @@ public class RopeSimulatorForces
     /// <param name="forceMode">How to apply the force</param>
     /// <param name="timeStep">The delta time since last rope update</param>
     /// <param name="point">The point to be modified</param>
-    public void AccumulateForce(Vector3 forceVector, ForceMode forceMode, float timeStep, RopePoint point)
+    public void AccumulateForce<T>(Vector3 forceVector, ForceMode forceMode, float timeStep, T point)
+        where T : IRopePointAccumulatedForce, IRopePointIsAttached
     {
-        if (!point.IsLocked)
+        if (!point.IsAttached)
         {
             switch (forceMode)
             {
@@ -50,9 +51,10 @@ public class RopeSimulatorForces
     /// <param name="forceMode">How to apply the force</param>
     /// <param name="timeStep">The delta time since last rope update</param>
     /// <param name="points">The list of points to be modified</param>
-    public void AccumulateForce(Vector3 forceVector, ForceMode forceMode, float timeStep, ICollection<RopePoint> points)
+    public void AccumulateForce<T>(Vector3 forceVector, ForceMode forceMode, float timeStep, IEnumerable<T> points)
+        where T : IRopePointAccumulatedForce, IRopePointIsAttached
     {
-        foreach (RopePoint p in points)
+        foreach (T p in points)
         {
             AccumulateForce(forceVector, forceMode, timeStep, p);
         }

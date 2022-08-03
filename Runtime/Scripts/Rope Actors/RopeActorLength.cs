@@ -12,26 +12,21 @@ public class RopeActorLength : RopeActorBase
         float goalLength = 5,
         float maxRopeLength = 10,
         float minRopeLength = .1f,
-        float segmentLength = .2f
+        float segmentLength = .5f
         ) : base(rope)
     {
-        float currentLength = 0;
-        foreach(RopeStick s in rope.Sticks)
-        {
-            currentLength += s.Length;
-        }
         ropeSimulatorLength = new RopeSimulatorLength(
-            currentLength,
+            rope.RopeBody,
             goalLength,
             maxRopeLength,
             minRopeLength,
             segmentLength
             );
 
-        actionExecutions.Add((ExecutionOrder, ApplyLength));
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder, ApplyLength));
     }
 
-    public override int ExecutionOrder { get { return -5; } }
+    public override int ExecutionOrder { get { return -20; } }
 
     public float GoalLength { set => ropeSimulatorLength.GoalLength = value; }
     
@@ -47,7 +42,7 @@ public class RopeActorLength : RopeActorBase
 
     private void ApplyLength()
     {
-        ropeSimulatorLength.ApplyLength(Rope.Sticks, Rope.Points, Rope.InsertPoint, Rope.RemovePointAt);
+        ropeSimulatorLength.ApplyLength();
     }
 
 }

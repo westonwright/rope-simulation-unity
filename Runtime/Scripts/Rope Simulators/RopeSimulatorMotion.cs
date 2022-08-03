@@ -78,11 +78,12 @@ public class RopeSimulatorMotion
     /// This should be called every time the rope is updated
     /// </summary>
     /// <param name="points">The list of points to be modified</param>
-    public void ApplyVelocity(ICollection<RopePoint> points)
+    public void ApplyVelocity<T>(IEnumerable<T> points)
+        where T : IRopePointPosition, IRopePointPrevPosition, IRopePointAccumulatedForce, IRopePointIsAttached
     {
-        foreach (RopePoint p in points)
+        foreach (T p in points)
         {
-            if (!p.IsLocked)
+            if (!p.IsAttached)
             {
                 Vector3 positionBeforeUpdate = p.Position;
                 // adds current velocity
@@ -128,7 +129,7 @@ public class RopeSimulatorMotion
                 }
                 Vector3 stickCenter = (p1.Position + p2.Position) / 2;
 
-                if (!p1.IsLocked)
+                if (!p1.IsAttached)
                 {
                     //limit angle
                     if (prevStickDir != Vector3.zero && Vector3.Angle(prevStickDir, stickDir) > maximumAngle)
@@ -138,18 +139,20 @@ public class RopeSimulatorMotion
                     SetStickPosition1(ref s, ref stickCenter, ref stickDir, order, sticks.Count - j);
                 }
 
-                if (!p2.IsLocked)
+                if (!p2.IsAttached)
                 {
                     SetStickPosition2(ref s, ref stickCenter, ref stickDir, order);
                 }
 
                 prevStickDir = stickDir;
-
-                //Debug.DrawRay(p1.position, stickDir * s.length, Color.green);
-                //if (i == movementIterations - 1)
-                //{
-                //    Debug.DrawRay(p2.position, stickDir * s.length, Color.blue);
-                //}
+                
+                /*
+                Debug.DrawRay(p2.Position, stickDir * s.Length, Color.Lerp(Color.black, order ? Color.green : Color.red, (float)i / movementIterations));
+                if (i == movementIterations - 1)
+                {
+                    //Debug.DrawRay(p2.Position, stickDir * s.Length, Color.blue);
+                }
+                */
             }
         }
     }
@@ -163,7 +166,7 @@ public class RopeSimulatorMotion
     /// <param name="order">Are we reading forward or backward</param>
     private void DefaultSetStickPosition1(ref RopeStick s, ref Vector3 stickCenter, ref Vector3 stickDirection, bool order, int stickIndex = 0)
     {
-        RopePoint p = order ? s.PointA : s.PointB;
+        IRopePointPosition p = order ? s.PointA : s.PointB;
         p.Position = stickCenter + stickDirection * s.Length / 2;
     }
     /// <summary>
@@ -175,7 +178,7 @@ public class RopeSimulatorMotion
     /// <param name="order">Are we reading forward or backward</param>
     private void DefaultSetStickPosition2(ref RopeStick s, ref Vector3 stickCenter, ref Vector3 stickDirection, bool order)
     {
-        RopePoint p = order ? s.PointB : s.PointA;
+        IRopePointPosition p = order ? s.PointB : s.PointA;
         p.Position = stickCenter - stickDirection * s.Length / 2;
     }
 }

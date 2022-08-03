@@ -9,31 +9,33 @@ public class RopeActorRigidbody : RopeActorBase
 
     private RopeActorMotion ropeActorMotion;
     public RopeActorMotion RopeActorMotion { get { return ropeActorMotion; } }
+    
+    private RopeActorAttachments ropeActorAttachments;
+    public RopeActorAttachments RopeActorAttachments { get { return ropeActorAttachments; } }
 
     private List<RopeContact> oldContacts = new List<RopeContact>();
 
     public RopeActorRigidbody(
         Rope rope,
         RopeActorMotion ropeActorMotion,
-        bool collisionEnabled,
+        RopeActorAttachments ropeActorAttachments,
         int collisionIterations
         ) : base(rope)
     {
         this.ropeActorMotion = ropeActorMotion;
+        this.ropeActorAttachments = ropeActorAttachments;
         ropeSimulatorRigidbody = new RopeSimulatorRigidbody(
             this.ropeActorMotion.RopeSimulatorMotion,
             CalculateLayermask(),
-            collisionEnabled,
             collisionIterations
             );
 
-        actionExecutions.Add((ExecutionOrder + 1, RefreshContacts));
-        actionExecutions.Add((ExecutionOrder - 1, SendCollisionEvents));
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder - 1, RefreshContacts));
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder + 1, SendCollisionEvents));
     }
 
     public override int ExecutionOrder { get { return RopeActorMotion.ExecutionOrder; } }
 
-    public bool CollisionEnabled { get => ropeSimulatorRigidbody.CollisionEnabled; set => ropeSimulatorRigidbody.CollisionEnabled = value; }
     public int CollisionIterations { get => ropeSimulatorRigidbody.CollisionIterations; set => ropeSimulatorRigidbody.CollisionIterations = value; }
 
 
@@ -41,7 +43,7 @@ public class RopeActorRigidbody : RopeActorBase
     private void RefreshContacts()
     {
         oldContacts = ropeSimulatorRigidbody.Contacts;
-        ropeSimulatorRigidbody.RefreshContacts(Rope.Attachments, Rope.Points.Count);
+        ropeSimulatorRigidbody.RefreshContacts(ropeActorAttachments.RopeSimulatorAttachments, Rope.RopeBody.Count);
     }
     // after motion
     private void SendCollisionEvents()
@@ -60,7 +62,7 @@ public class RopeActorRigidbody : RopeActorBase
 
     private LayerMask CalculateLayermask()
     {
-        return RopeCollisionMatrixLayerMask.MaskForLayer(Rope.ParentGameObject.layer);
+        return RopeCollisionMatrixLayerMask.MaskForLayer(Rope.RopeGameObject.gameObject.layer);
     }
 
     private void RefineContacts(List<RopeContact> contacts, out List<RopeContactCollision> contactCollisions)
@@ -105,7 +107,7 @@ public class RopeActorRigidbody : RopeActorBase
         {
             RopeCollisionEvent rc = new RopeCollisionEvent(Rope, contact);
             contact.Rigidbody.gameObject.SendMessage("OnRopeCollisionEnter", rc, SendMessageOptions.DontRequireReceiver);
-            Rope.ParentGameObject.SendMessage("OnRopeCollisionEnter", rc, SendMessageOptions.DontRequireReceiver);
+            Rope.RopeGameObject.gameObject.SendMessage("OnRopeCollisionEnter", rc, SendMessageOptions.DontRequireReceiver);
         }
     }
     private void SendCollisionStay(RopeContactCollision contact)
@@ -114,7 +116,7 @@ public class RopeActorRigidbody : RopeActorBase
         {
             RopeCollisionEvent rc = new RopeCollisionEvent(Rope, contact);
             contact.Rigidbody.gameObject.SendMessage("OnRopeCollisionStay", rc, SendMessageOptions.DontRequireReceiver);
-            Rope.ParentGameObject.SendMessage("OnRopeCollisionStay", rc, SendMessageOptions.DontRequireReceiver);
+            Rope.RopeGameObject.gameObject.SendMessage("OnRopeCollisionStay", rc, SendMessageOptions.DontRequireReceiver);
         }
     }
     private void SendCollisionExit(RopeContactCollision contact)
@@ -123,7 +125,7 @@ public class RopeActorRigidbody : RopeActorBase
         {
             RopeCollisionEvent rc = new RopeCollisionEvent(Rope, contact);
             contact.Rigidbody.gameObject.SendMessage("OnRopeCollisionExit", rc, SendMessageOptions.DontRequireReceiver);
-            Rope.ParentGameObject.SendMessage("OnRopeCollisionExit", rc, SendMessageOptions.DontRequireReceiver);
+            Rope.RopeGameObject.gameObject.SendMessage("OnRopeCollisionExit", rc, SendMessageOptions.DontRequireReceiver);
         }
     }
 }

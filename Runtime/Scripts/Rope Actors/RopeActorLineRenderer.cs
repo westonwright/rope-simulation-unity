@@ -18,7 +18,7 @@ public class RopeActorLineRenderer : RopeActorBase
             smoothingResolution
             );
 
-        actionExecutions.Add((ExecutionOrder, UpdateLineRenderer));
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder, UpdateLineRenderer));
     }
 
     public override int ExecutionOrder { get { return int.MaxValue; } }
@@ -27,6 +27,6 @@ public class RopeActorLineRenderer : RopeActorBase
 
     private void UpdateLineRenderer()
     {
-        ropeSimulatorLineRenderer.UpdateLineRenderer(Rope.Points);
+        ropeSimulatorLineRenderer.UpdateLineRenderer(Rope.RopeBody);
     }
 }

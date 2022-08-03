@@ -24,6 +24,7 @@ public class RopeComponentForces : RopeComponentBase
             rope,
             pointMass
             );
+        ropeActorForces.EnableActor();
     }
 
     protected override void OnValidate()
@@ -45,8 +46,8 @@ public class RopeComponentForces : RopeComponentBase
         float timeStep
         )
     {
-        fromIndex = Mathf.Clamp(fromIndex, 0, ropeActorForces.Rope.Points.Count - 1);
-        toIndex = Mathf.Clamp(toIndex, 0, ropeActorForces.Rope.Points.Count - 1);
+        fromIndex = Mathf.Clamp(fromIndex, 0, ropeActorForces.Rope.RopeBody.Count - 1);
+        toIndex = Mathf.Clamp(toIndex, 0, ropeActorForces.Rope.RopeBody.Count - 1);
 
         if (toIndex == fromIndex)
         {
@@ -71,8 +72,8 @@ public class RopeComponentForces : RopeComponentBase
             ropeActorForces.ApplyForce(
                 Vector3.Lerp(fromVector, toVector, (float)count / indexDifference), 
                 forceMode, 
-                timeStep, 
-                ropeActorForces.Rope.Points[i]
+                timeStep,
+                ropeActorForces.Rope.RopeBody[i]
                 );
 
             count++;

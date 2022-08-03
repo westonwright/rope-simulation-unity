@@ -10,10 +10,10 @@ public class RopeActorTension : RopeActorBase
     private RopeActorRigidbody ropeActorRigidbody;
     public RopeActorRigidbody RopeActorRigidbody { get { return ropeActorRigidbody; } }
 
+
     public RopeActorTension(
         Rope rope,
         RopeActorRigidbody ropeActorRigidbody,
-        bool tensionEnabled,
         float thresholdTendsion,
         float springStrength,
         float dampingStrength
@@ -22,18 +22,16 @@ public class RopeActorTension : RopeActorBase
         this.ropeActorRigidbody = ropeActorRigidbody;
         this.ropeSimulatorTension = new RopeSimulatorTension(
             this.ropeActorRigidbody.RopeSimulatorRigidbody,
-            tensionEnabled,
             thresholdTendsion,
             springStrength,
             dampingStrength
             );
 
-        actionExecutions.Add((ExecutionOrder, ExertForce));
+        actionExecutions.Add(new RopeActionExecution(ExecutionOrder, ExertForce));
     }
 
-    public override int ExecutionOrder { get { return ropeActorRigidbody.ExecutionOrder - 2; } }
+    public override int ExecutionOrder { get { return ropeActorRigidbody.ExecutionOrder + 2; } }
 
-    public bool TensionEnabled { set => ropeSimulatorTension.TensionEnabled = value; }
     public float ThresholdTension { get => ropeSimulatorTension.ThresholdTension; set => ropeSimulatorTension.ThresholdTension = value; }
     public float SpringStrength { get => ropeSimulatorTension.SpringStrength; set => ropeSimulatorTension.SpringStrength = value; }
     public float DampingStrength { get => ropeSimulatorTension.DampingStrength; set => ropeSimulatorTension.DampingStrength = value; }
@@ -41,6 +39,6 @@ public class RopeActorTension : RopeActorBase
 
     private void ExertForce()
     {
-        ropeSimulatorTension.ExertForces(Rope.Sticks, Rope.CurrentTimeStep);
+        ropeSimulatorTension.ExertForces(RopeActorRigidbody.RopeActorMotion.RopeActorLength.RopeSimulatorLength, Rope.RopeUpdater.CurrentTimeStep);
     }
 }

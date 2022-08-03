@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System;
 
 public abstract class RopeActorBase
@@ -10,14 +9,26 @@ public abstract class RopeActorBase
 
     public abstract int ExecutionOrder { get; }
 
-    protected List<(int, Action)> actionExecutions = new List<(int, Action)>();
-    /// <summary>
-    /// tuple with execution order, then action to execute
-    /// </summary>
-    public List<(int, Action)> ActionExecutions { get { return actionExecutions; } }
+    protected List<RopeActionExecution> actionExecutions = new List<RopeActionExecution>();
 
     public RopeActorBase(Rope rope)
     {
         this.rope = rope;
+    }
+
+    public virtual void EnableActor()
+    {
+        foreach(RopeActionExecution actionExecution in actionExecutions)
+        {
+            rope.RopeUpdater.AddActionExecution(actionExecution);
+        }
+    }
+
+    public virtual void DisableActor()
+    {
+        foreach (RopeActionExecution actionExecution in actionExecutions)
+        {
+            rope.RopeUpdater.RemoveActionExecution(actionExecution);
+        }
     }
 }

@@ -2,17 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
 public class RopeSimulatorRigidbody
 {
+    private readonly float MIN_COLLISION_ROTATION = 1f;
     private RopeSimulatorMotion ropeSimulatorMotion;
     public RopeSimulatorMotion RopeSimulatorMotion { get { return ropeSimulatorMotion; } }
 
     private LayerMask layerMask;
     public LayerMask LayerMask { set => layerMask = value; }
-
-    private bool collisionEnabled;
-    public bool CollisionEnabled { get => collisionEnabled; set => collisionEnabled = value; }
 
     private int collisionIterations = 2;
     public int CollisionIterations { get => collisionIterations; set => collisionIterations = Mathf.Max(value, 1); }
@@ -25,7 +24,6 @@ public class RopeSimulatorRigidbody
     public RopeSimulatorRigidbody(
         RopeSimulatorMotion ropeSimulatorMotion,
         LayerMask layerMask,
-        bool collisionEnabled = true,
         int collisionIterations = 2
         )
     {
@@ -34,7 +32,6 @@ public class RopeSimulatorRigidbody
         this.ropeSimulatorMotion.SetStickPosition2 = SetStickPosition2;
 
         this.layerMask = layerMask;
-        this.collisionEnabled = collisionEnabled;
         this.collisionIterations = collisionIterations;
     }
 
@@ -54,14 +51,9 @@ public class RopeSimulatorRigidbody
     
     private void SetStickPosition1(ref RopeStick s, ref Vector3 stickCenter, ref Vector3 stickDirection, bool order, int stickIndex = 0)
     {
-        if (!collisionEnabled)
-        {
-            ropeSimulatorMotion.GetDefaultSetStickPosition1(ref s, ref stickCenter, ref stickDirection, order, stickIndex);
-            return;
-        }
         RopePoint p1 = order ? s.PointA : s.PointB;
         RopePoint p2 = order ? s.PointB : s.PointA;
-        StickCollision(stickIndex, Vector3.Distance(p1.Position, p2.Position), order, ref stickCenter, ref p2, ref p1, ref stickDirection, out RopeContact contact);
+        StickCollision(stickIndex, order, ref stickCenter, ref p2, ref p1, ref stickDirection, out RopeContact contact);
         if (contact != null)
         {
             contacts.Insert(contact);
@@ -72,11 +64,6 @@ public class RopeSimulatorRigidbody
     
     private void SetStickPosition2(ref RopeStick s, ref Vector3 stickCenter, ref Vector3 stickDirection, bool order)
     {
-        if (!collisionEnabled)
-        {
-            ropeSimulatorMotion.GetDefaultSetStickPosition2(ref s, ref stickCenter, ref stickDirection, order);
-            return;
-        }
         RopePoint p = order ? s.PointB : s.PointA;
         p.Position = Vector3.Lerp(stickCenter - stickDirection * s.Length / 2, p.Position, p.Friction);
     }
@@ -84,8 +71,10 @@ public class RopeSimulatorRigidbody
     /// <summary>
     /// Calculates collision with a stick
     /// </summary>
-    private void StickCollision(int pointIndex, float stickLength, bool order, ref Vector3 stickCenter, ref RopePoint startPoint, ref RopePoint endPoint, ref Vector3 stickDir, out RopeContact contact)
+    private void StickCollision<T>(int pointIndex, bool order, ref Vector3 stickCenter, ref T startPoint, ref T endPoint, ref Vector3 stickDir, out RopeContact contact)
+        where T : IRopePointPosition, IRopePointPrevPosition, IRopePointFriction
     {
+        float stickLength = Vector3.Distance(startPoint.Position, endPoint.Position);
         contact = null;
         int collisionsCount = 0;
         while (true)
@@ -109,7 +98,6 @@ public class RopeSimulatorRigidbody
                         (hit.point + inverseHit.point) / 2,
                         -(order ? hit.normal : inverseHit.normal),
                         -(order ? inverseHit.normal : hit.normal),
-                        //-Vector3.Slerp(hit.normal, inverseHit.normal, .5f),
                         hit.collider.attachedRigidbody
                     );
                 }
@@ -128,7 +116,6 @@ public class RopeSimulatorRigidbody
                     //Debug.DrawRay(endPoint.prevPosition, Vector3.up * .1f, Color.green);
                     endPoint.PrevPosition = endPoint.Position;
                     Vector3 vectorToCenter = (stickDir * Vector3.Distance(startPoint.Position, stickCenter));
-                    //stickCenter = (startPoint.position + endPoint.position) / 2;
                     stickCenter = startPoint.Position + vectorToCenter;
                 }
                 else
@@ -140,8 +127,13 @@ public class RopeSimulatorRigidbody
             //need to come up with a better solution for what to do in this case
             if (collisionsCount >= collisionIterations)
             {
+                endPoint.Position = startPoint.Position + stickDir * stickLength;
+                endPoint.PrevPosition = endPoint.Position;
+                Vector3 vectorToCenter = (stickDir * Vector3.Distance(startPoint.Position, stickCenter));
+                stickCenter = startPoint.Position + vectorToCenter;
                 break;
             }
+
             collisionsCount++;
         }
     }
@@ -159,14 +151,13 @@ public class RopeSimulatorRigidbody
         float sB = 90 - sA;
         //height from plane for both triangles
         float a = Mathf.Sin(Mathf.Deg2Rad * sA) * hit.distance;
-        //Debug.DrawRay(startPoint, -hit.normal * a, Color.magenta);
         //a^2 + b^2 = c^2
         //c^2 - a^2 = b^2
         //length along plane of final triangle
         //angle to plane of final triangle
         float fB = Mathf.Rad2Deg * Mathf.Acos(a / stickLength);
 
-        float rotAngle = (fB - sB) + 1;//add one just to make sure its rotated enough to be outside the collider
+        float rotAngle = (fB - sB) + MIN_COLLISION_ROTATION;//add one just to make sure its rotated enough to be outside the collider
         return Quaternion.AngleAxis(rotAngle, -fTan) * stickDir;
     }
 

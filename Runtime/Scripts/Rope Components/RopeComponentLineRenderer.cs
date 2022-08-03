@@ -26,8 +26,6 @@ public class RopeComponentLineRenderer : RopeComponentBase
     private RopeActorLineRenderer ropeActorLineRenderer;
     public override RopeActorBase RopeActor { get { return ropeActorLineRenderer; } }
 
-
-
     public override void Initialize(Rope rope, IEnumerable<RopeActorBase> requiredActors)
     {
         lineRenderer = Instantiate(lineRendererPrefab, parentTransform ?? transform);
@@ -37,6 +35,7 @@ public class RopeComponentLineRenderer : RopeComponentBase
             lineRenderer,
             smoothingResolution
             );
+        ropeActorLineRenderer.EnableActor();
     }
 
     protected override void Reset()
