@@ -1,8 +1,7 @@
 # 3D Rope Simulation for Unity
 This package contains some tools for setting up basic rope simulations with various features. Ropes can recieve forces, collide with the environment, and apply forces to rigidbodies in the scene.
 
-![Rope Demo](https://user-images.githubusercontent.com/57042424/189775034-762ce03c-f9ed-4246-8df5-78bc99971f34.gif)
-
+![Rope Demo](https://user-images.githubusercontent.com/57042424/189775928-d6ddbd35-8757-41df-b5c1-ef6e4f6be1cc.gif)
 
 ## Check the [Wiki](https://github.com/westonwright/texturing-tools-unity/wiki)!
 Theres a lot of information there like:
